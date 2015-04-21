@@ -24,12 +24,14 @@
 
 
 # getCodePoint ------------------------------------------------------------
+
 getCodePoint <- function( path, 
                           doc.folder = paste(path,"Doc",sep="/"), 
                           csv.folder = paste(path,"Data/CSV",sep="/"),
                           headers.we.want = c("Admin_county_code","Admin_district_code"),
                           index.of.header.to.join = 2,
-                          rds.output.folder=path) {
+                          rds.output.folder = path,
+                          get.RDS.instead = FALSE ) {
   
   read_codelist <- function(sheet,path,NHS=FALSE) {
     z <- read_excel(path,sheet,col_names=FALSE)
@@ -75,14 +77,24 @@ getCodePoint <- function( path,
   names(join.string) <- headers.we.want[index.of.header.to.join]
   CodePoint<-left_join(CodePoint,CodePointAreaCodes,by=join.string)
   CodePoint[,headers.we.want] <- lapply(CodePoint[,headers.we.want],factor) # re factor, as join has coerced back to character
-  
-  z<-readLines(paste(doc.folder,.metadata.txt.filename,sep="/"))  
-  z<-z[grep("VERSION",z)] # find the line that says 'VERSION', assume only one line found
-  z<-regmatches(z,gregexpr(pattern = "([[:alnum:][:punct:]]+)$",z))  
-  # TODO HERE: what to do if not found
-  
-  saveRDS(CodePoint,paste0(rds.output.folder,"/","CodePoint ",z," compiled.rds"))
-  # TODO: option for not doing this, option for returning the name of this file (instead), etc
-  
-  return(CodePoint)
+
+  if(get.RDS.instead){
+    z<-readLines(paste(doc.folder,.metadata.txt.filename,sep="/"))  
+    z<-z[grep("VERSION",z)] # find the line that says 'VERSION', assume only one line found
+    z<-regmatches(z,gregexpr(pattern = "([[:alnum:][:punct:]]+)$",z))  
+    # TODO HERE: what to do if not found
+    
+    RDS.name <- paste0(rds.output.folder,"/","CodePoint ",z," compiled.rds")
+    saveRDS(CodePoint,RDS.name)
+    return(RDS.name)
+  } else {
+    return(CodePoint)
+  }
+}
+
+
+# getCodePointRDS ---------------------------------------------------------
+
+getCodePointRDS <- function( path, ... ) {
+  return(getCodePoint( path, ..., get.RDS.instead = TRUE ))
 }
