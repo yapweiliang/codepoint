@@ -15,7 +15,7 @@
 # constants ---------------------------------------------------------------
 # stuff that we assume remains unchanged through different version of CodePoint Open, but maybe might change
 .metadata.txt.filename <- "metadata.txt" # to extract version
-.codelist.xls.filename <- "Codelist.xls"
+.codelist.xls.filename <- "Codelist.xlsx" # 2015.4.0 version uses .xlsx
 .codelist.xls.areacodes.sheetname <- "AREA_CODES" # name of sheet within Codelist.xls that has table of the different types of codes
 .nhscodelist.xls.filename <- "NHS_Codelist.xls"
 .csv.column.types <- "ciiicccccc" # format as per readr::read_csv
