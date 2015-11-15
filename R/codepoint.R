@@ -15,7 +15,7 @@
 # constants ---------------------------------------------------------------
 # stuff that we assume remains unchanged through different version of CodePoint Open, but maybe might change
 .metadata.txt.filename <- "metadata.txt" # to extract version
-.codelist.xls.filename <- "Codelist.xlsx" # 2015.4.0 version uses .xlsx
+.codelist.xls.filename <- "Codelist.xlsx" # 2015.4.0 version uses .xlsx; .xlsx needs $X0, not $X1
 .codelist.xls.areacodes.sheetname <- "AREA_CODES" # name of sheet within Codelist.xls that has table of the different types of codes
 .nhscodelist.xls.filename <- "NHS_Codelist.xls"
 .csv.column.types <- "ciiicccccc" # format as per readr::read_csv
@@ -60,16 +60,17 @@ getCodePoint <- function( path,
   CodePoint<-subset(CodePoint,select=c(.mandatory.headers,headers.we.want)) # reduce size of dataframe  
   
   # compile all the area codes
-  area_codes <- as.list(read_excel(codelist.xls.file,sheet=.codelist.xls.areacodes.sheetname,col_names=FALSE)[,1])$X1
+  area_codes <- as.list(read_excel(codelist.xls.file,sheet=.codelist.xls.areacodes.sheetname,col_names=FALSE)[,1])$X0 # X1 for .xls, X0 for .xlsx
   area_codes <- lapply( area_codes, read_codelist,  path=codelist.xls.file )
   area_codes <- do.call(rbind,area_codes)
+  names(area_codes) <- c("AreaName", "AreaID", "AreaType")
   nhs_areas <- excel_sheets(nhscodelist.xls.file)
   nhs_areas <- lapply( nhs_areas, read_codelist, path=nhscodelist.xls.file, NHS=TRUE )  
   nhs_areas <- do.call(rbind,nhs_areas)
+  names(nhs_areas) <- c("AreaID", "AreaName", "AreaType")
   CodePointAreaCodes <- rbind(area_codes,nhs_areas)
   CodePointAreaCodes  <- CodePointAreaCodes[complete.cases(CodePointAreaCodes),]
-  names(CodePointAreaCodes) <- c("AreaName","AreaID","AreaType") # assign headers that we want
-  
+
   # join  
   CodePoint[,headers.we.want] <- lapply(CodePoint[,headers.we.want],factor)
   CodePointAreaCodes <- as.data.frame(unclass(CodePointAreaCodes)) # factorise all
